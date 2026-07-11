@@ -19,9 +19,6 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// PROFIL — dipisah ke sini (bukan di dalam group 'user' / 'admin') supaya
-// hanya didaftarkan SEKALI dan tetap bisa diakses oleh kedua jenis role,
-// tanpa bentrok nama route (profile.edit / profile.update / profile.destroy).
 Route::middleware(['auth', 'nocache'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
