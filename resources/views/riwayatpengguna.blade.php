@@ -115,7 +115,7 @@
                             <td>{{ $riw->tanggal }}</td>
 
                             <td>
-                                @if($riw->status == 'Menunggu Konfirmasi')
+                                @if($riw->status == 'Menunggu')
                                     <span class="status-menunggu">
                                         {{ $riw->status }}
                                     </span>
@@ -139,9 +139,9 @@
 
                             <td>
 
-                                @if($riw->status == 'Menunggu Konfirmasi')
+                                @if($riw->status == 'Menunggu')
 
-                                    <a href="{{ route('riwayat.batalkan', $riw->id) }}" class="btn-batal"
+                                    <a href="{{ route('riwayat.batalkan', $riw->id_riwayat) }}" class="btn-batal"
                                         onclick="return confirm('Apakah Anda yakin ingin membatalkan pendaftaran ini?')">
                                         Batalkan
                                     </a>

@@ -8,44 +8,115 @@ class BlogPenggunaController extends Controller
 {
     public function index()
     {
-        return view('berandapengguna');
+        $totalKegiatan = DB::table('kegiatan')->count();
+
+        $pendaftaranSaya = DB::table('riwayat')
+            ->where('id_user', auth()->id())
+            ->count();
+
+        $menunggu = DB::table('riwayat')
+            ->where('id_user', auth()->id())
+            ->where('status', 'Menunggu')
+            ->count();
+
+        return view('berandapengguna', compact(
+            'totalKegiatan',
+            'pendaftaranSaya',
+            'menunggu'
+        ));
     }
 
     public function kegiatan()
     {
-        $kegiatan = DB::table('kegiatan')->paginate(5);
+        $kegiatan = DB::table('kegiatan')->get();
         return view('kegiatanpengguna', ['kegiatan' => $kegiatan]);
     }
 
     public function detailkegiatan($id)
     {
-        $kegiatan = DB::table('kegiatan')->where('id_kegiatan', $id)->first();
-        return view('detailkegiatan', ['kegiatan' => $kegiatan]);
+        $kegiatan = DB::table('kegiatan')
+            ->where('id_kegiatan', $id)
+            ->first();
+
+        $cek = DB::table('riwayat')
+            ->where('id_user', auth()->id())
+            ->where('nama_kegiatan', $kegiatan->nama_kegiatan)
+            ->whereNotIn('status', ['Dibatalkan', 'Ditolak'])
+            ->exists();
+
+        return view('detailkegiatan', [
+            'kegiatan' => $kegiatan,
+            'cek' => $cek
+        ]);
     }
 
     public function daftarkegiatan($id)
     {
-        $kegiatan = DB::table('kegiatan')->where('id_kegiatan', $id)->first();
+        $kegiatan = DB::table('kegiatan')
+            ->where('id_kegiatan', $id)
+            ->first();
 
+        // Cek apakah kegiatan ada
+        if (!$kegiatan) {
+            return back()->with('error', 'Kegiatan tidak ditemukan.');
+        }
+
+        // Cek kuota
+        if ($kegiatan->kuota_terisi >= $kegiatan->kuota_total) {
+            return back()->with('error', 'Kuota kegiatan sudah penuh.');
+        }
+
+        // Cek apakah user sudah pernah mendaftar
+        $cek = DB::table('riwayat')
+            ->where('id_user', auth()->id())
+            ->where('nama_kegiatan', $kegiatan->nama_kegiatan)
+            ->whereNotIn('status', ['Dibatalkan', 'Ditolak'])
+            ->exists();
+
+        if ($cek) {
+            return back()->with('error', 'Anda sudah mendaftar kegiatan ini.');
+        }
+
+        // Simpan riwayat
         DB::table('riwayat')->insert([
-            'id_user' => auth()->user()->id,
+            'id_user' => auth()->id(),
             'nama_kegiatan' => $kegiatan->nama_kegiatan,
-            'tanggal_kegiatan' => $kegiatan->tanggal_kegiatan,
-            'status' => 'Menunggu Konfirmasi',
+            'tanggal' => $kegiatan->tanggal,
+            'status' => 'Menunggu',
         ]);
 
-        return redirect('/riwayatpengguna')->with('success','Pendaftaran berhasil! Silakan cek riwayat untuk melihat status pendaftaran Anda.');
-    }
+        // Tambah kuota terisi
+        DB::table('kegiatan')
+            ->where('id_kegiatan', $id)
+            ->increment('kuota_terisi');
 
+        return redirect('/riwayatpengguna')
+            ->with('success', 'Pendaftaran berhasil! Silakan cek riwayat untuk melihat status pendaftaran Anda.');
+    }
     public function riwayat()
     {
-        $riwayat = DB::table('riwayat')->paginate(5);
-        return view('riwayatpengguna', ['riwayat' => $riwayat]);
+        $riwayat = DB::table('riwayat')
+            ->where('id_user', auth()->id())
+            ->get();
+
+        return view('riwayatpengguna', compact('riwayat'));
     }
 
     public function batalkan($id)
     {
-        DB::table('riwayat')->where('id', $id)->update(['status' => 'Dibatalkan']);
+        $riwayat = DB::table('riwayat')
+            ->where('id_riwayat', $id)
+            ->first();
+
+        DB::table('riwayat')
+            ->where('id_riwayat', $id)
+            ->update([
+                'status' => 'Dibatalkan'
+            ]);
+
+        DB::table('kegiatan')
+            ->where('nama_kegiatan', $riwayat->nama_kegiatan)
+            ->decrement('kuota_terisi');
         return redirect('/riwayatpengguna')->with('success', 'Pendaftaran berhasil dibatalkan.');
     }
 

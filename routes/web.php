@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BlogPenggunaController;
+use App\Http\Controllers\BlogAdminController;
 
 Route::get('/', function () {
 
@@ -30,10 +31,12 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 Route::middleware(['auth', 'user', 'nocache'])->group(function () {
 
     // BERANDA
-    Route::get('/blogpengguna', [BlogPenggunaController::class, 'index']);
+    Route::get('/blogpengguna', [BlogPenggunaController::class, 'index'])
+        ->name('user.dashboard');
 
     // KEGIATAN
-    Route::get('/kegiatanpengguna', [BlogPenggunaController::class, 'kegiatan']);
+    Route::get('/kegiatanpengguna', [BlogPenggunaController::class, 'kegiatan'])
+        ->name('user.kegiatan');
 
     // DETAIL KEGIATAN
     Route::get('/kegiatan/{id}', [BlogPenggunaController::class, 'detailkegiatan'])
@@ -44,29 +47,44 @@ Route::middleware(['auth', 'user', 'nocache'])->group(function () {
         ->name('kegiatan.daftar');
 
     // RIWAYAT
-    Route::get('/riwayatpengguna', [BlogPenggunaController::class, 'riwayat']);
+    Route::get('/riwayatpengguna', [BlogPenggunaController::class, 'riwayat'])
+        ->name('user.riwayat');
 
     // BATALKAN
-    // Catatan: masih pakai GET. Idealnya diubah ke POST/PATCH karena ini aksi
-    // yang mengubah data (supaya tidak bisa ter-trigger cuma dengan buka link).
-    // Belum saya ubah otomatis karena view/blade-nya kemungkinan masih pakai <a href>.
-    Route::get('/batalkan/{id}', [BlogPenggunaController::class, 'batalkan'])->name('riwayat.batalkan');
+    Route::get('/batalkan/{id}', [BlogPenggunaController::class, 'batalkan'])
+        ->name('riwayat.batalkan');
 
-    // PROFIL (tampilan ringkas ala blog, terpisah dari ProfileController resmi di atas)
-    Route::get('/profilpengguna', [BlogPenggunaController::class, 'profil']);
+    // PROFIL
+    Route::get('/profilpengguna', [BlogPenggunaController::class, 'profil'])
+        ->name('user.profil');
 
     // EDIT PROFIL
-    Route::get('/editprofilpengguna', [BlogPenggunaController::class, 'editprofil']);
+    Route::get('/editprofilpengguna', [BlogPenggunaController::class, 'editprofil'])
+        ->name('user.editprofil');
 
     // UPDATE PROFIL
-    Route::post('/updateprofilpengguna', [BlogPenggunaController::class, 'updateprofil']);
+    Route::post('/updateprofilpengguna', [BlogPenggunaController::class, 'updateprofil'])
+        ->name('user.updateprofil');
 
 });
 
 Route::middleware(['auth', 'admin', 'nocache'])->group(function () {
 
-    // Tambahkan di sini route-route khusus admin
-    // (misal: kelola kegiatan, kelola volunteer, dsb.)
+    // DASHBOARD ADMIN
+    Route::get('/admin/dashboard', [BlogAdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // KELOLA KEGIATAN
+    Route::get('/admin/kegiatan', [BlogAdminController::class, 'kegiatan'])->name('admin.kegiatan');
+    Route::get('/admin/kegiatan/tambah', [BlogAdminController::class, 'tambahKegiatan'])->name('admin.kegiatan.tambah');
+    Route::post('/admin/kegiatan', [BlogAdminController::class, 'storeKegiatan'])->name('admin.kegiatan.store');
+    Route::get('/admin/kegiatan/{id}/edit', [BlogAdminController::class, 'editKegiatan'])->name('admin.kegiatan.edit');
+    Route::put('/admin/kegiatan/{id}', [BlogAdminController::class, 'updateKegiatan'])->name('admin.kegiatan.update');
+    Route::delete('/admin/kegiatan/{id}', [BlogAdminController::class, 'hapusKegiatan'])->name('admin.kegiatan.hapus');
+
+    // KELOLA VOLUNTEER
+    Route::get('/admin/volunteer', [BlogAdminController::class, 'volunteer'])->name('admin.volunteer');
+    Route::patch('/admin/volunteer/{id}/terima', [BlogAdminController::class, 'terimaVolunteer'])->name('admin.volunteer.terima');
+    Route::patch('/admin/volunteer/{id}/tolak', [BlogAdminController::class, 'tolakVolunteer'])->name('admin.volunteer.tolak');
 
 });
 

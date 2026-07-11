@@ -126,9 +126,27 @@
             </div>
 
             @if ($kegiatan->kuota_terisi >= $kegiatan->kuota_total)
-                <button class="btn-penuh" disabled>Kuota Penuh</button>
+
+                <button class="btn-penuh" disabled>
+                    Kuota Penuh
+                </button>
+
+            @elseif ($cek)
+
+                <button class="btn-penuh" disabled>
+                    Sudah Terdaftar
+                </button>
+
             @else
-                <a href="{{ url('/riwayatpengguna') }}" class="btn-daftar">Daftar</a>
+
+                <form action="{{ route('kegiatan.daftar', $kegiatan->id_kegiatan) }}" method="POST">
+                    @csrf
+
+                    <button type="submit" class="btn-daftar">
+                        Daftar
+                    </button>
+                </form>
+
             @endif
 
         </div>
