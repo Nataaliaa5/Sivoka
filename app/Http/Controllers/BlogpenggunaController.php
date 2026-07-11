@@ -23,6 +23,20 @@ class BlogPenggunaController extends Controller
         return view('detailkegiatan', ['kegiatan' => $kegiatan]);
     }
 
+    public function daftarkegiatan($id)
+    {
+        $kegiatan = DB::table('kegiatan')->where('id_kegiatan', $id)->first();
+
+        DB::table('riwayat')->insert([
+            'id_user' => auth()->user()->id,
+            'nama_kegiatan' => $kegiatan->nama_kegiatan,
+            'tanggal_kegiatan' => $kegiatan->tanggal_kegiatan,
+            'status' => 'Menunggu Konfirmasi',
+        ]);
+
+        return redirect('/riwayatpengguna')->with('success','Pendaftaran berhasil! Silakan cek riwayat untuk melihat status pendaftaran Anda.');
+    }
+
     public function riwayat()
     {
         $riwayat = DB::table('riwayat')->paginate(5);
@@ -32,7 +46,7 @@ class BlogPenggunaController extends Controller
     public function batalkan($id)
     {
         DB::table('riwayat')->where('id', $id)->update(['status' => 'Dibatalkan']);
-        return redirect('/riwayatpengguna');
+        return redirect('/riwayatpengguna')->with('success', 'Pendaftaran berhasil dibatalkan.');
     }
 
     public function profil()

@@ -18,11 +18,16 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-
+// PROFIL — dipisah ke sini (bukan di dalam group 'user' / 'admin') supaya
+// hanya didaftarkan SEKALI dan tetap bisa diakses oleh kedua jenis role,
+// tanpa bentrok nama route (profile.edit / profile.update / profile.destroy).
+Route::middleware(['auth', 'nocache'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'user', 'nocache'])->group(function () {
 
     // BERANDA
     Route::get('/blogpengguna', [BlogPenggunaController::class, 'index']);
@@ -35,17 +40,19 @@ Route::middleware('auth')->group(function () {
         ->name('kegiatan.detail');
 
     // DAFTAR KEGIATAN
-    Route::post('/daftar-kegiatanpengguna/{id}', [BlogPenggunaController::class, 'daftarKegiatan'])
+    Route::post('/daftar-kegiatanpengguna/{id}', [BlogPenggunaController::class, 'daftarkegiatan'])
         ->name('kegiatan.daftar');
 
     // RIWAYAT
     Route::get('/riwayatpengguna', [BlogPenggunaController::class, 'riwayat']);
 
     // BATALKAN
-    Route::get('/batalkan/{id}', [BlogPenggunaController::class, 'batalkan'])
-        ->name('riwayat.batalkan');
+    // Catatan: masih pakai GET. Idealnya diubah ke POST/PATCH karena ini aksi
+    // yang mengubah data (supaya tidak bisa ter-trigger cuma dengan buka link).
+    // Belum saya ubah otomatis karena view/blade-nya kemungkinan masih pakai <a href>.
+    Route::get('/batalkan/{id}', [BlogPenggunaController::class, 'batalkan'])->name('riwayat.batalkan');
 
-    // PROFIL
+    // PROFIL (tampilan ringkas ala blog, terpisah dari ProfileController resmi di atas)
     Route::get('/profilpengguna', [BlogPenggunaController::class, 'profil']);
 
     // EDIT PROFIL
@@ -53,6 +60,13 @@ Route::middleware('auth')->group(function () {
 
     // UPDATE PROFIL
     Route::post('/updateprofilpengguna', [BlogPenggunaController::class, 'updateprofil']);
+
+});
+
+Route::middleware(['auth', 'admin', 'nocache'])->group(function () {
+
+    // Tambahkan di sini route-route khusus admin
+    // (misal: kelola kegiatan, kelola volunteer, dsb.)
 
 });
 

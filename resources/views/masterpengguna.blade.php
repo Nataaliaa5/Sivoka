@@ -187,7 +187,8 @@
 
                 </a>
 
-                <a href="/kegiatanpengguna" class="{{ request()->is('kegiatanpengguna') || request()->is('kegiatan/*') ? 'active' : '' }}">
+                <a href="/kegiatanpengguna"
+                    class="{{ request()->is('kegiatanpengguna') || request()->is('kegiatan/*') ? 'active' : '' }}">
 
                     KEGIATAN
 
@@ -241,11 +242,12 @@
         <div class="footer-content">
 
             <h3>
-                Volunteer Mahasiswa
+                Sistem Informasi Volunteer Mahasiswa
             </h3>
 
             <p>
-                Platform pendaftaran volunteer kegiatan kampus
+                Sistem Informasi Volunteer Kegiatan Mahasiswa yang membantu mahasiswa
+                menemukan, mendaftar, dan mengikuti berbagai kegiatan volunteer baik di lingkungan kampus maupun di luar kampus.
             </p>
 
             <div class="footer-menu">
@@ -254,7 +256,8 @@
                     Beranda
                 </a>
 
-                <a href="/kegiatanpengguna" class="{{ request()->is('kegiatanpengguna') || request()->is('kegiatan/*') ? 'active' : '' }}">
+                <a href="/kegiatanpengguna"
+                    class="{{ request()->is('kegiatanpengguna') || request()->is('kegiatan/*') ? 'active' : '' }}">
                     Kegiatan
                 </a>
 
